@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todo_app/models/todo_models.dart';
-import 'package:todo_app/models/user_model.dart';
 
 class TodoDatabase {
   static Database? _database;
@@ -24,8 +23,8 @@ class TodoDatabase {
   }
 
   Future<Database> initDb() async {
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, 'todo5.db');
+    String databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'todo5.db');
 
     return await openDatabase(
       path,
@@ -43,22 +42,21 @@ class TodoDatabase {
     );
   }
 
-  Future<void> createTodos(TodoModel todo) async {
-    final db = await database;
+  Future<void> createTodo(TodoModel todo) async {
+    Database? db = await database;
     await db?.insert(TABLE_NAME, todo.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<TodoModel>> getTodosByUser(UserModel user) async {
-    final db = await database;
-    final result = await db
-        ?.query(TABLE_NAME, where: '$COLUMN_USER_ID = ?', whereArgs: [user.id]);
-
+  Future<List<TodoModel>> getTodosByUserId(int? userId) async {
+    Database? db = await database;
+    List<Map<String, Object?>>? result = await db
+        ?.query(TABLE_NAME, where: '$COLUMN_USER_ID = ?', whereArgs: [userId]);
     return result!.map((e) => TodoModel.fromMap(e)).toList();
   }
 
   Future<void> updateTodoStatus(TodoModel todo) async {
-    final db = await database;
+    Database? db = await database;
     await db?.update(
       TABLE_NAME,
       todo.toMap(),
@@ -67,13 +65,13 @@ class TodoDatabase {
     );
   }
 
-  Future<void> deleteTodo(TodoModel todo) async {
-    final db = await database;
+  Future<void> deleteTodoById(int? todoId) async {
+    Database? db = await database;
     try {
       await db?.delete(
         TABLE_NAME,
         where: '$COLUMN_ID = ?',
-        whereArgs: [todo.id],
+        whereArgs: [todoId],
       );
     } catch (err) {
       debugPrint("Something went wrong when deleting an item: $err");

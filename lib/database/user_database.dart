@@ -40,22 +40,22 @@ class UserDatabase {
     );
   }
 
-  Future<void> createUsers(UserModel user) async {
-    final db = await database;
+  Future<void> createUser(UserModel user) async {
+    Database? db = await database;
     await db?.insert(TABLE_NAME, user.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<UserModel>> getUser(UserModel user) async {
-    final db = await database;
-    final result = await db?.query(TABLE_NAME,
-        where: '$COLUMN_USERNAME = ?', whereArgs: [user.userName], limit: 1);
+  Future<UserModel?> getUserByUserName(String? userName) async {
+    Database? db = await database;
+    List<Map<String, Object?>> result = await db!.query(TABLE_NAME,
+        where: '$COLUMN_USERNAME = ?', whereArgs: [userName], limit: 1);
 
-    return result!.map((e) => UserModel.fromMap(e)).toList();
+    return result.isNotEmpty ? UserModel.fromMap(result.first) : null;
   }
 
   Future<void> updateUserStatus(UserModel user) async {
-    final db = await database;
+    Database? db = await database;
     await db?.update(
       TABLE_NAME,
       user.toMap(),
@@ -64,13 +64,13 @@ class UserDatabase {
     );
   }
 
-  Future<void> deleteUser(UserModel user) async {
-    final db = await database;
+  Future<void> deleteUserById(int userId) async {
+    Database? db = await database;
     try {
       await db?.delete(
         TABLE_NAME,
         where: '$COLUMN_ID = ?',
-        whereArgs: [user.id],
+        whereArgs: [userId],
       );
     } catch (err) {
       debugPrint("Something went wrong when deleting an item: $err");

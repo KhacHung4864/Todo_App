@@ -1,54 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:todo_app/common/app_theme/app_fonts.dart';
-import '../common/app_theme/app_theme.dart';
+import 'package:todo_app/common/routers/app_routers.dart';
+import 'package:todo_app/models/user_model.dart';
+import 'package:todo_app/view_models/user_view_model.dart';
 
-class ObscureController extends GetxController {
-  RxBool isObscureText = true.obs;
-  void reverseObscure() {
-    isObscureText.value = !isObscureText.value;
-  }
-}
+class LoginController extends GetxController {
+  final emailLoginController = TextEditingController();
+  final passwordLoginController = TextEditingController();
+  final emailRegisterController = TextEditingController();
+  final passwordRegisterController = TextEditingController();
+  final passwordConfirmController = TextEditingController();
 
-class TextController extends GetxController {
-  final controllerEmailLogin = TextEditingController();
-  final controllerPasswordLogin = TextEditingController();
-  final controllerEmailRegister = TextEditingController();
-  final controllerPasswordRegister = TextEditingController();
-  final controllerConfirmPassword = TextEditingController();
   RxBool isEmpty = false.obs;
   RxBool isCorrect = false.obs;
+  bool isObscureText = true;
+
+  void reverseObscure() {
+    isObscureText = !isObscureText;
+    update();
+  }
 
   void clearText() {
-    controllerEmailLogin.clear();
-    controllerPasswordLogin.clear();
-    controllerEmailRegister.clear();
-    controllerPasswordRegister.clear();
-    controllerConfirmPassword.clear();
+    emailLoginController.clear();
+    passwordLoginController.clear();
+    emailRegisterController.clear();
+    passwordRegisterController.clear();
+    passwordConfirmController.clear();
   }
 
-  errorText() {
-    return isEmpty.value
-        ? Padding(
-            padding: EdgeInsets.only(top: 10.h),
-            child: Text("Value Can't Be Empty",
-                style: AppFonts.avenir400(12.sp, AppColors.primaryElementBg)),
-          )
-        : SizedBox(
-            height: 15.h,
-          );
+  loginAction(UserController userController) async {
+    if (emailLoginController.text.isEmpty ||
+        passwordLoginController.text.isEmpty) {
+      isEmpty.value = true;
+    } else {
+      isEmpty.value = false;
+      var check = await userController.checkLoginUser(
+          emailLoginController.text.trim(),
+          passwordLoginController.text.trim());
+      if (check) {
+        clearText();
+        Get.toNamed(AppRouter.test);
+      }
+    }
   }
 
-  inCorrectText() {
-    return isCorrect.value
-        ? Padding(
-            padding: EdgeInsets.only(top: 10.h),
-            child: Text("Password incorrect",
-                style: AppFonts.avenir400(12.sp, AppColors.primaryElementBg)),
-          )
-        : SizedBox(
-            height: 15.h,
-          );
+  actionGoToRegister() async {
+    isEmpty.value = false;
+    clearText();
+    Get.toNamed(AppRouter.signUp);
+  }
+
+  registerAction(BuildContext context, UserController userController) async {
+    if (emailRegisterController.text.isEmpty ||
+        passwordRegisterController.text.isEmpty ||
+        passwordConfirmController.text.isEmpty) {
+      isEmpty.value = true;
+    } else {
+      isEmpty.value = false;
+      if (passwordRegisterController.text.trim() !=
+          passwordConfirmController.text.trim()) {
+        isCorrect.value = true;
+      } else {
+        isCorrect.value = false;
+        UserModel userRegister = UserModel(
+            userName: emailRegisterController.text.trim(),
+            password: passwordRegisterController.text.trim());
+        var check = await userController.checkAndRegisterUser(userRegister);
+        if (check) {
+          Get.back();
+          clearText();
+        }
+      }
+    }
   }
 }

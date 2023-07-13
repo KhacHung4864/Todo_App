@@ -1,8 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:todo_app/common/widgets/show_dialog_widget.dart';
 import 'package:todo_app/database/user_database.dart';
 import 'package:todo_app/models/user_model.dart';
 
@@ -14,34 +10,31 @@ class UserController extends GetxController {
     user.value = newUser;
   }
 
-  Future<bool> checkRegisterUser(BuildContext context, UserModel user) async {
-    final data = await userDatabase.getUser(user);
-    if (data.isNotEmpty) {
-      mySnackBar(
-          context: context,
-          content:
-              'Username is already in use. please choose another username');
+  Future<bool> checkAndRegisterUser(UserModel user) async {
+    final data = await userDatabase.getUserByUserName(user.userName);
+    if (data != null) {
+      Get.snackbar('Notify',
+          'Username is already in use. please choose another username');
     } else {
       await addUser(user);
-      mySnackBar(context: context, content: 'Sign Up Success');
+      Get.snackbar('Notify', 'Sign Up Success');
     }
-    return data.isEmpty;
+    return data == null;
   }
 
-  Future<bool> checkLoginUser(
-      BuildContext context, UserModel user, String password) async {
-    final data = await userDatabase.getUser(user);
-    if (data.isNotEmpty && password == data.first.password) {
-      mySnackBar(context: context, content: 'Logged in successfully');
-      updateUser(data.first);
+  Future<bool> checkLoginUser(String userName, String password) async {
+    final data = await userDatabase.getUserByUserName(userName);
+    if (data != null && password == data.password) {
+      Get.snackbar('Notify', 'Logged in successfully');
+      updateUser(data);
     } else {
-      mySnackBar(context: context, content: 'Incorrect account or information');
+      Get.snackbar('Notify', 'Incorrect account or information');
     }
-    return (data.isNotEmpty && password == data.first.password);
+    return (data != null && password == data.password);
   }
 
   Future<void> addUser(UserModel user) async {
-    await userDatabase.createUsers(user);
+    await userDatabase.createUser(user);
   }
 
   // Future<void> updateUserstatus(UserModel user) async {

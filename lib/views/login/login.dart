@@ -3,17 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:todo_app/common/routers/app_routers.dart';
 import 'package:todo_app/gen/assets.gen.dart';
-import 'package:todo_app/models/user_model.dart';
 import 'package:todo_app/view_models/login_view_model.dart';
 import 'package:todo_app/view_models/user_view_model.dart';
 import 'widgets/login_widget.dart';
 
 class Login extends StatelessWidget {
   Login({super.key});
-  final TextController textController = Get.put(TextController());
-  final UserController userController = Get.put(UserController());
+  final LoginController loginController = Get.find();
+  final UserController userController = Get.find();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -35,46 +34,27 @@ class Login extends StatelessWidget {
                     titleText("Email"),
                     SizedBox(height: 5.h),
                     textField(
-                        "Enter your email address",
-                        TextFieldType.email,
-                        Assets.icons.user.image(),
-                        textController.controllerEmailLogin),
+                      "Enter your email address",
+                      TextFieldType.email,
+                      Assets.icons.user.image(),
+                      loginController.emailLoginController,
+                    ),
                     titleText("Password"),
                     SizedBox(height: 5.h),
                     textField(
-                        "Enter your password",
-                        TextFieldType.password,
-                        Assets.icons.lock.image(),
-                        textController.controllerPasswordLogin),
-                    Obx(() => textController.errorText())
+                      "Enter your password",
+                      TextFieldType.password,
+                      Assets.icons.lock.image(),
+                      loginController.passwordLoginController,
+                    ),
+                    Obx(() => isError(loginController.isEmpty.value)),
                   ],
                 ),
               ),
-              logInAndRegButton("Login", ButtonType.login, () async {
-                if (textController.controllerEmailLogin.text.isEmpty ||
-                    textController.controllerPasswordLogin.text.isEmpty) {
-                  textController.isEmpty.value = true;
-                } else {
-                  textController.isEmpty.value = false;
-                  UserModel userLogin = UserModel(
-                      userName: textController.controllerEmailLogin.text.trim(),
-                      password:
-                          textController.controllerPasswordLogin.text.trim());
-                  var check = await userController.checkLoginUser(
-                      context,
-                      userLogin,
-                      textController.controllerPasswordLogin.text.trim());
-                  if (check) {
-                    textController.clearText();
-                    Get.toNamed(AppRouter.test);
-                  }
-                }
-              }),
-              logInAndRegButton("Register", ButtonType.register, () {
-                textController.isEmpty.value = false;
-                textController.clearText();
-                Get.toNamed(AppRouter.signUp);
-              })
+              logInAndRegButton("Login", ButtonType.login,
+                  () => loginController.loginAction(userController)),
+              logInAndRegButton("Register", ButtonType.register,
+                  loginController.actionGoToRegister)
             ],
           ),
         ),

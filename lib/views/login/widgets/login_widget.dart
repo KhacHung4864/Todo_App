@@ -25,6 +25,30 @@ AppBar appBar(String title, bool isBack) {
   );
 }
 
+Widget isError(bool checkError) {
+  return checkError
+      ? Padding(
+          padding: EdgeInsets.only(top: 10.h),
+          child: Text("Value Can't Be Empty",
+              style: AppFonts.avenir400(12.sp, AppColors.primaryElementBg)),
+        )
+      : SizedBox(
+          height: 15.h,
+        );
+}
+
+Widget inCorrectText(bool checkCorrect) {
+  return checkCorrect
+      ? Padding(
+          padding: EdgeInsets.only(top: 10.h),
+          child: Text("Password incorrect",
+              style: AppFonts.avenir400(12.sp, AppColors.primaryElementBg)),
+        )
+      : SizedBox(
+          height: 15.h,
+        );
+}
+
 Widget titleText(String text) {
   return Container(
       margin: EdgeInsets.only(top: 5.h),
@@ -42,8 +66,6 @@ Widget textField(
   Image image,
   TextEditingController textController,
 ) {
-  final ObscureController obsController = Get.put(ObscureController());
-  final TextController checkController = Get.put(TextController());
   return Container(
     margin: EdgeInsets.only(bottom: 5.h),
     decoration: BoxDecoration(
@@ -54,79 +76,56 @@ Widget textField(
       Container(margin: EdgeInsets.only(left: 17.w), width: 16.w, child: image),
       SizedBox(
         width: 270.w,
-        child: textFieldType == TextFieldType.email
-            ? Center(
-                child: TextFormField(
-                  onTap: () {
-                    checkController.isEmpty.value = false;
-                  },
-                  controller: textController,
-                  keyboardType: TextInputType.multiline,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: hintext,
-                    hintStyle: const TextStyle(
-                      color: AppColors.primarySecondaryElementText,
-                    ),
-                    border: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent)),
-                    enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent)),
-                    disabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent)),
-                    focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent)),
-                  ),
-                  style: AppFonts.avenir400(14.sp, AppColors.primaryText),
+        child: Center(
+          child: GetBuilder<LoginController>(
+            init: LoginController(), // INIT IT ONLY THE FIRST TIME
+            builder: (loginController) => TextFormField(
+              onTap: () {
+                loginController.isEmpty.value = false;
+                loginController.isCorrect.value = false;
+              },
+              controller: textController,
+              keyboardType: TextInputType.multiline,
+              autocorrect: false,
+              obscureText: textFieldType == TextFieldType.email
+                  ? false
+                  : loginController.isObscureText,
+              decoration: InputDecoration(
+                suffixIcon: textFieldType == TextFieldType.password
+                    ? Padding(
+                        padding: EdgeInsets.only(right: 15.w),
+                        child: GestureDetector(
+                          onTap: () {
+                            loginController.reverseObscure();
+                          },
+                          child: Icon(
+                            loginController.isObscureText
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: AppColors.primaryText,
+                            size: 20.w,
+                          ),
+                        ),
+                      )
+                    : null,
+                hintText: hintext,
+                hintStyle: const TextStyle(
+                  color: AppColors.primarySecondaryElementText,
                 ),
-              )
-            : Obx(
-                () => Center(
-                  child: TextFormField(
-                    onTap: () {
-                      checkController.isEmpty.value = false;
-                      checkController.isCorrect.value = false;
-                    },
-                    controller: textController,
-                    keyboardType: TextInputType.multiline,
-                    autocorrect: false,
-                    obscureText: obsController.isObscureText.value,
-                    decoration: InputDecoration(
-                      suffixIcon: textFieldType == TextFieldType.password
-                          ? Padding(
-                              padding: EdgeInsets.only(right: 15.w),
-                              child: GestureDetector(
-                                onTap: () {
-                                  obsController.reverseObscure();
-                                },
-                                child: Icon(
-                                  obsController.isObscureText.value
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: AppColors.primaryText,
-                                  size: 20.w,
-                                ),
-                              ),
-                            )
-                          : null,
-                      hintText: hintext,
-                      hintStyle: const TextStyle(
-                        color: AppColors.primarySecondaryElementText,
-                      ),
-                      border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent)),
-                      enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent)),
-                      disabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent)),
-                      focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent)),
-                    ),
-                    style: AppFonts.avenir400(14.sp, AppColors.primaryText),
-                  ),
-                ),
+                border: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.transparent)),
+                enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.transparent)),
+                disabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.transparent)),
+                focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.transparent)),
               ),
-      ),
+              style: AppFonts.avenir400(14.sp, AppColors.primaryText),
+            ),
+          ),
+        ),
+      )
     ]),
   );
 }
